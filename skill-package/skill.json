@@ -38,11 +38,7 @@
             "Alexa, ask audio nudge what causes rain",
             "Alexa, tell audio nudge end question session"
           ],
-          "keywords": [
-            "questions",
-            "search",
-            "answers"
-          ],
+          "keywords": ["questions", "search", "answers"],
           "name": "Audio Nudge",
           "summary": "Ask questions and hear concise Google search results."
         }

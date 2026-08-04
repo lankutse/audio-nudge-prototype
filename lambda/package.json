@@ -4,7 +4,7 @@
   "description": "Alexa skill that answers questions with Google Programmable Search",
   "main": "index.js",
   "scripts": {
-    "test": "node --test"
+    "test": "node --check index.js"
   },
   "author": "",
   "license": "Apache-2.0",
