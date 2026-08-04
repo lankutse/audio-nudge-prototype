@@ -1,4 +1,4 @@
-lambda/node_modules/
+node_modules/
 lambda/package-lock.json
 .env
 .env.*
