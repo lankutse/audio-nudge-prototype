@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "ask-sdk-local-debug": "^1.1.0",
+    "install": "^0.13.0",
+    "npm": "^11.19.0"
+  }
+}

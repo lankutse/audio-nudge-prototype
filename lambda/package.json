@@ -1,0 +1,14 @@
+{
+  "name": "audio-nudge",
+  "version": "1.0.0",
+  "description": "Alexa skill that answers questions with Google Programmable Search",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0"
+  }
+}

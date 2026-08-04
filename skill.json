@@ -1,0 +1,53 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:902167997173:function:9c9cf898-e1df-4f48-944d-f77772b1ff4d:Release_0"
+        },
+        "interfaces": [],
+        "locales": {},
+        "regions": {
+          "NA": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-east-1:902167997173:function:9c9cf898-e1df-4f48-944d-f77772b1ff4d:Release_0"
+            }
+          },
+          "EU": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:eu-west-1:902167997173:function:9c9cf898-e1df-4f48-944d-f77772b1ff4d:Release_0"
+            }
+          },
+          "FE": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-west-2:902167997173:function:9c9cf898-e1df-4f48-944d-f77772b1ff4d:Release_0"
+            }
+          }
+        }
+      }
+    },
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "distributionCountries": [],
+      "isAvailableWorldwide": true,
+      "locales": {
+        "en-US": {
+          "description": "Ask Audio Nudge a question and hear the top result from Google Programmable Search. Continue asking questions until you say end question session.",
+          "examplePhrases": [
+            "Alexa, open audio nudge",
+            "Alexa, ask audio nudge what causes rain",
+            "Alexa, tell audio nudge end question session"
+          ],
+          "keywords": [
+            "questions",
+            "search",
+            "answers"
+          ],
+          "name": "Audio Nudge",
+          "summary": "Ask questions and hear concise Google search results."
+        }
+      },
+      "testingInstructions": "Open Audio Nudge and ask a question. After the answer and nudge message, ask another question. Say 'end question session' to exit."
+    }
+  }
+}
