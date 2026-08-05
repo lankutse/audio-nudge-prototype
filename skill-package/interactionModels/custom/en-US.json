@@ -12,7 +12,6 @@
             }
           ],
           "samples": [
-            "{question}",
             "search for {question}",
             "tell me {question}",
             "answer {question}"
