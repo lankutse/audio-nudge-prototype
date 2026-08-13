@@ -1,5 +1,5 @@
 {
-  "name": "audio-nudge",
+  "name": "audio-nudge-prototype",
   "version": "1.0.0",
   "description": "Alexa skill that answers questions with Google Programmable Search",
   "main": "index.js",

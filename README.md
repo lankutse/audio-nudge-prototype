@@ -1,7 +1,3 @@
-# Audio Nudge Alexa skill
+Launch skill with prompt "alexa, open query nudge" or just "open query nudge" 
 
-Audio Nudge is an Alexa custom skill that reads the top snippet from Google Programmable Search and then says, “An audio nudge would play here.” It continues prompting for questions until the user says “end question session,” “stop,” or “cancel.”
-
-
-#Notes: 
-node_modules and package-lock.json come from "npm install" when setting up local debug
+Must say "ask query nudge" before asking question
