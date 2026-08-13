@@ -87,7 +87,7 @@ function createHandler({ search = searchTopResult } = {}) {
             return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
         },
         handle(handlerInput) {
-            const speech = `Welcome to Audio Nudge. ${QUESTION_PROMPT}`;
+            const speech = `Welcome to Query Nudge. ${QUESTION_PROMPT}`;
             return handlerInput.responseBuilder.speak(speech).reprompt(QUESTION_PROMPT).getResponse();
         }
     };

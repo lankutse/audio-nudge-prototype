@@ -10,5 +10,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "ask-sdk-core": "^2.14.0"
+  },
+  "devDependencies": {
+    "ask-sdk-local-debug": "^1.1.0"
   }
 }
