@@ -1,20 +1,46 @@
-const Alexa = require('ask-sdk-core');
+require('dotenv').config(); 
 
-//defining constants 
+const Alexa = require('ask-sdk-core');
+const https = require('https');
+
 const QUESTION_PROMPT = 'What would you like to ask?';
 const CONTINUE_PROMPT = 'What else would you like to ask? You can say end query when you are done.';
 const NUDGE_MESSAGE = '[an audio nudge would play here]';
-const QUESTION_RESPONSE = 'Great question! Let me search the web and get back to you. [answer would go here]';
+//const QUESTION_RESPONSE = 'Great question! Let me search the web and get back to you.';
 
-//web search functionality would go below. for now, this "build question" function will give a basic question response
-const buildQuestionResponse = (handlerInput) => {
-        const speech = `${QUESTION_RESPONSE} ${NUDGE_MESSAGE} ${CONTINUE_PROMPT}`;
-        return handlerInput.responseBuilder
-            .speak(speech)
-            .reprompt(CONTINUE_PROMPT)
-            .getResponse();
-    };
+const search = question => new Promise((resolve, reject) => {
+    https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(question)}`, response => {
+        let body = '';
+        response.on('data', chunk => body += chunk);
+        response.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const answer = 
+                    (data.answer_box && (data.answer_box.answer || data.answer_box.snippet)) ||
+                    (data.knowledge_graph && data.knowledge_graph.description) ||
+                    (data.organic_results && data.organic_results[0] && data.organic_results[0].snippet);
 
+                answer ? resolve(answer) : reject(new Error('No answer found'));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }).on('error', reject);
+});
+
+const escapeSsml = text => text.replace(/[&<>]/g, character =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[character]);
+
+//takes answer to question & adds audio nudge at the end
+const buildQuestionResponse = async (handlerInput) => {
+    const question = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
+    const answer = escapeSsml(await search(question));
+    const speech = `${answer} ${NUDGE_MESSAGE} ${CONTINUE_PROMPT}`;
+    return handlerInput.responseBuilder
+        .speak(speech)
+        .reprompt(CONTINUE_PROMPT) 
+        .getResponse();
+};
 
 //triggered with 'alexa, open query nudge'
 const LaunchRequestHandler = {
@@ -61,7 +87,7 @@ const EndQuestionSessionIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'EndQuestionSessionIntent'); 
     },
     handle(handlerInput) {
-        const speakOutput = 'Question Session Ended. Goodbye!';
+        const speakOutput = 'Query Session Ended. Goodbye!';
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .getResponse();

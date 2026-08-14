@@ -1,17 +1,17 @@
 {
   "name": "audio-nudge-prototype",
-  "version": "1.0.0",
-  "description": "Alexa skill that answers questions with Google Programmable Search",
+  "version": "1.2.0",
+  "description": "An amazon alexa skill that searches the web using SerpApi, and plays an audio nudge after the answer to reduce information uncertainty",
   "main": "index.js",
   "scripts": {
-    "test": "node --check index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "Apache-2.0",
+  "author": "Amazon Alexa",
+  "license": "Apache License",
   "dependencies": {
-    "ask-sdk-core": "^2.14.0"
-  },
-  "devDependencies": {
-    "ask-sdk-local-debug": "^1.1.0"
+    "ask-sdk-core": "^2.7.0",
+    "ask-sdk-model": "^1.19.0",
+    "aws-sdk": "^2.326.0",
+    "dotenv": "^16.4.5"
   }
 }
