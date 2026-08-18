@@ -12,6 +12,8 @@
                         }
                     ],
                     "samples": [
+                        "what are {question}",
+                        "explain {question}",
                         "what can you tell me about {question}",
                         "can you find information about {question}",
                         "can you tell me about {question}",
