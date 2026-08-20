@@ -12,22 +12,84 @@
                         }
                     ],
                     "samples": [
-                        "what are {question}",
                         "explain {question}",
-                        "what can you tell me about {question}",
-                        "can you find information about {question}",
-                        "can you tell me about {question}",
-                        "how does {question}",
-                        "why is {question}",
-                        "where is {question}",
-                        "who is {question}",
-                        "what is {question}",
                         "find information about {question}",
                         "tell me about {question}",
                         "search for {question}",
-                        "can I {question}",
                         "query nudge {question}",
                         "ask query nudge {question}"
+                    ]
+                },
+                {
+                    "name": "WhatQuestionIntent",
+                    "slots": [
+                        {
+                            "name": "question",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what {question}"
+                    ]
+                },
+                {
+                    "name": "WhoQuestionIntent",
+                    "slots": [
+                        {
+                            "name": "question",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "who {question}"
+                    ]
+                },
+                {
+                    "name": "WhyQuestionIntent",
+                    "slots": [
+                        {
+                            "name": "question",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "why {question}"
+                    ]
+                },
+                {
+                    "name": "WhereQuestionIntent",
+                    "slots": [
+                        {
+                            "name": "question",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where {question}"
+                    ]
+                },
+                {
+                    "name": "HowQuestionIntent",
+                    "slots": [
+                        {
+                            "name": "question",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "how {question}"
+                    ]
+                },
+                {
+                    "name": "CanQuestionIntent",
+                    "slots": [
+                        {
+                            "name": "question",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "can {question}"
                     ]
                 },
                 {

@@ -46,7 +46,7 @@
         "en-US": {
           "description": "Sample Full Description",
           "examplePhrases": [
-            "Alexa, open test me",
+            "Alexa, open query nudge",
             "hello",
             "help"
           ],

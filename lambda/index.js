@@ -7,6 +7,15 @@ const util = require('./util.js');
 const QUESTION_PROMPT = 'What would you like to ask?';
 const CONTINUE_PROMPT = 'What else would you like to ask? You can say end query when you are done.';
 
+const QUESTION_PREFIXES = {
+    WhatQuestionIntent: 'what',
+    WhoQuestionIntent: 'who',
+    WhyQuestionIntent: 'why',
+    WhereQuestionIntent: 'where',
+    HowQuestionIntent: 'how',
+    CanQuestionIntent: 'can'
+};
+
 const search = question => new Promise((resolve, reject) => {
     https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(question)}`, response => {
         let body = '';
@@ -50,7 +59,10 @@ const escapeSsml = text => text.replace(/[&<>]/g, character =>
 
 //takes answer to question & adds audio nudge at the end
 const buildQuestionResponse = async (handlerInput) => {
-    const question = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
+    const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
+    const slotValue = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
+    const prefix = QUESTION_PREFIXES[intentName];
+    const question = prefix ? `${prefix} ${slotValue}` : slotValue;
     const result = await search(question);
     const source = result.source.replace(/^https?:\/\/(?:www\.)?([^/]+).*$/i, '$1');
     
@@ -82,8 +94,12 @@ const LaunchRequestHandler = {
 
 const AskQuestionIntentHandler = {
     canHandle(handlerInput) {
-        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AskQuestionIntent';
+        if (Alexa.getRequestType(handlerInput.requestEnvelope) !== 'IntentRequest') {
+            return false;
+        }
+
+        const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
+        return intentName === 'AskQuestionIntent' || Boolean(QUESTION_PREFIXES[intentName]);
     },
     handle: buildQuestionResponse
 };
