@@ -21,26 +21,27 @@ Query Nudge is an Alexa skill that answers questions with results from Google vi
     ```text 
     https://github.com/lankutse/audio-nudge-prototype.git
     ```
-    
+
 3. Once the skill is built, change the invocation name to "query nudge", save, and build the skill
 <img width="1279" height="369" alt="image" src="https://github.com/user-attachments/assets/d64c60c9-f858-4361-974b-e098a1a5c3f8" />
-
 
 4. Go to [SerpAPI](https://serpapi.com/) and sign up. Once your email and phone number have been verified, copy your private SerpAPI key from your dashboard.
 <img width="1283" height="192" alt="image" src="https://github.com/user-attachments/assets/c12577b8-e7d2-4b89-b53d-6ca9a252fbd4" />
 
-
 5. In the Alexa Developer Console, go to the "Code" tab & create a new file in the lambda folder titled ".env"
    <img width="1332" height="684" alt="image" src="https://github.com/user-attachments/assets/a801560c-6ef5-49cb-8afe-d4baf8d36fe9" />
 
-   
 6. Paste the following line into the .env file, and paste your SerpAPI key inside the quotes
-
 ```text
 SERPAPI_API_KEY="<yourkeyhere>"
 ```
 
-7. After saving and deploying the skill, navigate to the "Test" tab to interact with the skill
+7. Download the sound_nudge_alexa.mp3 from this repository, and upload it to your S3 storage as shown below:
+<img width="1192" height="730" alt="image" src="https://github.com/user-attachments/assets/896ebe16-6cf7-4882-981f-8787beee8871" />
+
+8. After saving and deploying the skill, navigate to the "Test" tab and put the skill in development mode to interact with it.
+<img width="1267" height="237" alt="image" src="https://github.com/user-attachments/assets/81e9800e-e7bf-40fe-bd03-8424fd62542d" />
+
 
 ## Add a New Audio Nudge Sound: 
 [TO DO]
