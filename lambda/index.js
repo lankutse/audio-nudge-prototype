@@ -52,12 +52,13 @@ const escapeSsml = text => text.replace(/[&<>]/g, character =>
 const buildQuestionResponse = async (handlerInput) => {
     const question = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
     const result = await search(question);
-
-    //here cases can be added to change the audio nudge based on the type of question asked
+    const source = result.source.replace(/^https?:\/\/(?:www\.)?([^/]+).*$/i, '$1');
+    
+    //cases can be added here to change the audio nudge based on the type of question asked
     const nudge = escapeSsml(util.getS3PreSignedUrl("Media/sound_nudge_alexa.mp3"));
 
 
-    const speech = `${escapeSsml(result.answer)} Source: ${escapeSsml(result.source)}. <audio src="${nudge}"/> ${CONTINUE_PROMPT}`;
+    const speech = `${escapeSsml(result.answer)} Source: ${escapeSsml(source)}. <audio src="${nudge}"/> ${CONTINUE_PROMPT}`;
     return handlerInput.responseBuilder
         .speak(speech)
         .reprompt(CONTINUE_PROMPT) 
