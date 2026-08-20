@@ -44,7 +44,19 @@ SERPAPI_API_KEY="<yourkeyhere>"
 
 
 ## Add a New Audio Nudge Sound: 
-[TO DO]
+*Note:* your audio must be an mp3 file and less than 90 seconds long
+1. Copy the code below to ensure your audio has the proper bitrate (48 kbps) and sample rate (24,000 Hz)
+   + Replace <example_nudge> & <example_nudge_edited> with the name of your audio file. You may need to install ffmpeg in the terminal first.
+    ```text
+    ffmpeg -i <example_nudge>.mp3 -codec:a libmp3lame -b:a 48k -ar 24000 -ac 1 <example_nudge_edited>.mp3
+    ```
+3. Upload the sound to your S3 storage (shown in step 7 of configuring the dev console above) 
+4. Change the code shown below to have your new audio nudge play. Be sure to save and deploy before testing.
+<img width="671" height="43" alt="image" src="https://github.com/user-attachments/assets/8733bb9c-0377-45d0-81c5-effd0a99e379" />
+
+
+
+      
 
 
 ## Using The Skill: 
