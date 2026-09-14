@@ -16,8 +16,9 @@ const QUESTION_PREFIXES = {
     CanQuestionIntent: 'can'
 };
 
+//searches question in google using serpAPI
 const search = question => new Promise((resolve, reject) => {
-    https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(question)}`, response => {
+    https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(question)}&hl=en`,response => {
         let body = '';
         response.on('data', chunk => body += chunk);
         response.on('end', () => {
@@ -52,23 +53,23 @@ const search = question => new Promise((resolve, reject) => {
     ).on('error', reject);
   });
 
-
+//formats the answer & source to be read clearly
 const escapeSsml = text => text.replace(/[&<>]/g, character =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[character]);
 
-
-//takes answer to question & adds audio nudge at the end
+//reads answer, adds audio nudge, and prompts user to ask again or end session
 const buildQuestionResponse = async (handlerInput) => {
     const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
     const slotValue = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
+
+    //adds question prefix back so entire question is retained
     const prefix = QUESTION_PREFIXES[intentName];
     const question = prefix ? `${prefix} ${slotValue}` : slotValue;
     const result = await search(question);
     const source = result.source.replace(/^https?:\/\/(?:www\.)?([^/]+).*$/i, '$1');
     
-    //cases can be added here to change the audio nudge based on the type of question asked
+    //default nudge sound
     const nudge = escapeSsml(util.getS3PreSignedUrl("Media/sound_nudge_alexa.mp3"));
-
 
     const speech = `${escapeSsml(result.answer)} Source: ${escapeSsml(source)}. <audio src="${nudge}"/> ${CONTINUE_PROMPT}`;
     return handlerInput.responseBuilder
@@ -77,7 +78,7 @@ const buildQuestionResponse = async (handlerInput) => {
         .getResponse();
 };
 
-//triggered with 'alexa, open query nudge'
+//activates the query nudge skill
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
@@ -92,18 +93,19 @@ const LaunchRequestHandler = {
     }
 };
 
+//processes question based on prefix
 const AskQuestionIntentHandler = {
     canHandle(handlerInput) {
         if (Alexa.getRequestType(handlerInput.requestEnvelope) !== 'IntentRequest') {
             return false;
         }
-
         const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
         return intentName === 'AskQuestionIntent' || Boolean(QUESTION_PREFIXES[intentName]);
     },
     handle: buildQuestionResponse
 };
 
+//triggered with utterance "help" once skill is already opened
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -118,6 +120,7 @@ const HelpIntentHandler = {
     }
 };
 
+//triggered with utterance "end query"
 const EndQuestionSessionIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -208,7 +211,7 @@ const ErrorHandler = {
     }
 };
 
-//translate skill into standard AWS lambda handler signature 
+//translates skill into standard AWS lambda handler signature 
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
