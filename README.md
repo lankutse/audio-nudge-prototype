@@ -1,9 +1,8 @@
 # Query Nudge Alexa Skill
-Query Nudge is an Alexa skill that answers questions with results from
-Google via [SerpAPI](https://serpapi.com/). After answering the question and stating its source, the skill plays a short audio nudge and keeps the session open for another question. The session ends after the user says “end query”. 
+Query Nudge is an Alexa skill that answers questions with results from Google via [SerpAPI](https://serpapi.com/). After answering the question and stating its source, the skill plays a short audio nudge and keeps the session open for another question. The session ends after the user says “end query”. 
 
 
-## Repository structure
+## Repository Structure
 ```text
 .
 ├── interactionModels/custom/en-US.json   # Alexa intents and sample utterances
@@ -14,15 +13,53 @@ Google via [SerpAPI](https://serpapi.com/). After answering the question and sta
 └── sound_nudge_alexa.mp3                 # Example Audio nudge source file
 ```
 
-## Configure skill in Amazon Dev Console: 
-[TO DO] 
+## Configure Skill in Amazon Developer Console: 
+1. Go to [Amazon Developer Services](https://developer.amazon.com/) and make an account. ***Note:*** To register, you will need to verify your identity with a government issued ID
+2. Go to [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask) and select "Create Skill"
+    + Select "Other" for type of experience, "Custom" for the model type, and "Alexa-hosted (Node.js)" for hosting services
+    + Under templates, select "Import Skill" and copy and paste the following link: 
+    ```text 
+    https://github.com/lankutse/audio-nudge-prototype.git
+    ```
+
+3. Once the skill is built, change the invocation name to "query nudge", save, and build the skill
+<img width="1279" height="369" alt="image" src="https://github.com/user-attachments/assets/d64c60c9-f858-4361-974b-e098a1a5c3f8" />
+
+4. Go to [SerpAPI](https://serpapi.com/) and sign up. Once your email and phone number have been verified, copy your private SerpAPI key from your dashboard.
+<img width="1283" height="192" alt="image" src="https://github.com/user-attachments/assets/c12577b8-e7d2-4b89-b53d-6ca9a252fbd4" />
+
+5. In the Alexa Developer Console, go to the "Code" tab & create a new file in the lambda folder titled ".env"
+   <img width="1332" height="684" alt="image" src="https://github.com/user-attachments/assets/a801560c-6ef5-49cb-8afe-d4baf8d36fe9" />
+
+6. Paste the following line into the .env file, and paste your SerpAPI key inside the quotes
+```text
+SERPAPI_API_KEY="<yourkeyhere>"
+```
+
+7. Download the sound_nudge_alexa.mp3 from this repository, and upload it to your S3 storage as shown below:
+<img width="1192" height="730" alt="image" src="https://github.com/user-attachments/assets/896ebe16-6cf7-4882-981f-8787beee8871" />
+
+8. After saving and deploying the skill, navigate to the "Test" tab and put the skill in development mode to interact with it.
+<img width="1267" height="237" alt="image" src="https://github.com/user-attachments/assets/81e9800e-e7bf-40fe-bd03-8424fd62542d" />
 
 
 ## Add a New Audio Nudge Sound: 
-[TO DO]
+*Note:* your audio must be an mp3 file and less than 90 seconds long
+1. Copy the code below to ensure your audio has the proper bitrate (48 kbps) and sample rate (24,000 Hz)
+   + Replace <example_nudge> & <example_nudge_edited> with the name of your audio file. You may need to install ffmpeg in the terminal first.
+    ```text
+    ffmpeg -i <example_nudge>.mp3 -codec:a libmp3lame -b:a 48k -ar 24000 -ac 1 <example_nudge_edited>.mp3
+    ```
+3. Upload the sound to your S3 storage (shown in step 7 of configuring the dev console above) 
+4. Change the code shown below to have your new audio nudge play. Be sure to save and deploy before testing.
+<img width="671" height="43" alt="image" src="https://github.com/user-attachments/assets/8733bb9c-0377-45d0-81c5-effd0a99e379" />
 
 
-## Using the skill: 
+
+      
+
+
+## Using The Skill: 
 The skill supports a two-step conversation:
 ```text
 User: Alexa, open query nudge.
@@ -33,6 +70,12 @@ User: Why is the sky blue?
 It also supports asking the question in the invocation:
 ```text
 Alexa, ask query nudge why is the sky blue.
+```
+
+The question must be well formed without the prefix "Alexa, ask query nudge" to ensure proper web searching. For example, "Alexa, ask query nudge who was the first president" is well formed, but "Alexa, ask query nudge who the first president was" is not. 
+```test 
+"Alexa, ask query nudge who was the first president" -> "who was the first president" is searched
+"Alexa, ask query nudge who the first president was" -> "who the first president was" is searched
 ```
 
 Questions can begin with `what`, `who`, `why`, `where`, `how`, or `can`: 
