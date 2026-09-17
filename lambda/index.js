@@ -4,9 +4,28 @@ const Alexa = require('ask-sdk-core');
 const https = require('https');
 const util = require('./util.js'); 
 
-const QUESTION_PROMPT = 'What would you like to ask?';
-const CONTINUE_PROMPT = 'What else would you like to ask? You can say end query when you are done.';
+//connects to amazon provided AWS account to save information between sessions
+const AWS = require('aws-sdk'); 
+const ddbAdapter = require('ask-sdk-dynamodb-persistence-adapter'); 
 
+const persistenceAdapter = new ddbAdapter.DynamoDbPersistenceAdapter({
+      tableName: process.env.DYNAMODB_PERSISTENCE_TABLE_NAME,
+      createTable: false,
+      dynamoDBClient: new AWS.DynamoDB({
+          apiVersion: 'latest',
+          region: process.env.DYNAMODB_PERSISTENCE_REGION
+      })
+  });
+ 
+//if desired, specify search sources below. 
+const sources = [
+    'wikipedia.org', 
+    'reddit.com'
+]; 
+const sourceFilter = sources
+    .map(domain => `site:${domain}`)
+    .join(' OR ');
+    
 const QUESTION_PREFIXES = {
     WhatQuestionIntent: 'what',
     WhoQuestionIntent: 'who',
@@ -16,9 +35,33 @@ const QUESTION_PREFIXES = {
     CanQuestionIntent: 'can'
 };
 
-//searches question in google using serpAPI
+//change audio nudge options below
+ const NUDGES = {
+      sound1: {
+          type: 'audio',
+          value: 'Media/sound_nudge_alexa.mp3'
+      },
+      sound2: {
+          type: 'audio',
+          value: 'Media/sound_nudge_2.mp3'
+      },
+      voice1: {
+          type: 'voice',
+          value: 'What do you think about that?'
+      },
+      voice2: {
+          type: 'voice',
+          value: 'The information I looked up online relates to a health topic.'
+      }
+  };
+
+const QUESTION_PROMPT = 'What would you like to ask?';
+const CONTINUE_PROMPT = 'What else would you like to ask? You can say end query when you are done.';
+
+//uses serpAPI to search web, builds question response
 const search = question => new Promise((resolve, reject) => {
-    https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(question)}&hl=en`,response => {
+    const searchQuery = `${question} (${sourceFilter})`;
+    https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(searchQuery)}&hl=en`,response => {
         let body = '';
         response.on('data', chunk => body += chunk);
         response.on('end', () => {
@@ -53,32 +96,100 @@ const search = question => new Promise((resolve, reject) => {
     ).on('error', reject);
   });
 
-//formats the answer & source to be read clearly
+
 const escapeSsml = text => text.replace(/[&<>]/g, character =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[character]);
-
-//reads answer, adds audio nudge, and prompts user to ask again or end session
-const buildQuestionResponse = async (handlerInput) => {
-    const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
-    const slotValue = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
-
-    //adds question prefix back so entire question is retained
-    const prefix = QUESTION_PREFIXES[intentName];
-    const question = prefix ? `${prefix} ${slotValue}` : slotValue;
-    const result = await search(question);
-    const source = result.source.replace(/^https?:\/\/(?:www\.)?([^/]+).*$/i, '$1');
     
-    //default nudge sound
-    const nudge = escapeSsml(util.getS3PreSignedUrl("Media/sound_nudge_alexa.mp3"));
-
-    const speech = `${escapeSsml(result.answer)} Source: ${escapeSsml(source)}. <audio src="${nudge}"/> ${CONTINUE_PROMPT}`;
-    return handlerInput.responseBuilder
-        .speak(speech)
-        .reprompt(CONTINUE_PROMPT) 
-        .getResponse();
+const sendProgressiveResponse = async (handlerInput, speech) => {
+    const directiveServiceClient =
+      handlerInput.serviceClientFactory.getDirectiveServiceClient();
+    
+    await directiveServiceClient.enqueue({
+      header: {
+          requestId: handlerInput.requestEnvelope.request.requestId
+      },
+      directive: {
+          type: 'VoicePlayer.Speak',
+          speech: `<speak>${speech}</speak>`
+      }
+    });
 };
 
-//activates the query nudge skill
+//answers question and plays audio nudge
+ const buildQuestionResponse = async (handlerInput) => {
+      const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
+      const slotValue = Alexa.getSlotValue(
+          handlerInput.requestEnvelope,
+          'question'
+      );
+
+      const prefix = QUESTION_PREFIXES[intentName];
+      const question = prefix ? `${prefix} ${slotValue}` : slotValue;
+      const result = await search(question);
+
+      const source = result.source.replace(
+          /^https?:\/\/(?:www\.)?([^/]+).*$/i,
+          '$1'
+      );
+
+      const persistentAttributes =
+          await handlerInput.attributesManager.getPersistentAttributes() || {};
+
+      const selectedNudge =
+          NUDGES[persistentAttributes.nudge] || NUDGES.sound1;
+
+      const answerSpeech =
+          `${escapeSsml(result.answer)} Source: ${escapeSsml(source)}.`;
+
+      // Leave the audio-option behavior unchanged.
+      if (selectedNudge.type === 'audio') {
+          const nudge = `<audio src="${escapeSsml(
+              util.getS3PreSignedUrl(selectedNudge.value)
+          )}"/>`;
+
+          const speech =
+              `${answerSpeech} ${nudge} ${CONTINUE_PROMPT}`;
+
+          return handlerInput.responseBuilder
+              .speak(speech)
+              .reprompt(CONTINUE_PROMPT)
+              .getResponse();
+      }
+
+      // Voice options use separate progressive responses.
+      try {
+          await sendProgressiveResponse(
+              handlerInput,
+              answerSpeech
+          );
+
+          await sendProgressiveResponse(
+              handlerInput,
+              `${escapeSsml(selectedNudge.value)} <break time="3s"/>`
+          );
+
+          return handlerInput.responseBuilder
+              .speak(CONTINUE_PROMPT)
+              .reprompt(CONTINUE_PROMPT)
+              .getResponse();
+      } catch (error) {
+          console.log(
+              `Progressive response failed: ${JSON.stringify(error)}`
+          );
+
+          // Fall back to a normal response if the progressive API fails.
+          const speech =
+              `${answerSpeech} ${escapeSsml(selectedNudge.value)} `
+              + `<break time="3s"/> ${CONTINUE_PROMPT}`;
+
+          return handlerInput.responseBuilder
+              .speak(speech)
+              .reprompt(CONTINUE_PROMPT)
+              .getResponse();
+      }
+  };
+
+//triggered with 'alexa, open query nudge'
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
@@ -93,19 +204,98 @@ const LaunchRequestHandler = {
     }
 };
 
-//processes question based on prefix
+
+const SettingsIntentHandler = {
+      canHandle(handlerInput) {
+          return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+              && Alexa.getIntentName(handlerInput.requestEnvelope) === 'SettingsIntent';
+      },
+
+      async handle(handlerInput) {
+          const attributesManager = handlerInput.attributesManager;
+          const sessionAttributes = attributesManager.getSessionAttributes();
+
+          const requestedType = (
+              Alexa.getSlotValue(handlerInput.requestEnvelope, 'nudgeType') || ''
+          ).toLowerCase();
+
+          const requestedNumber = (
+              Alexa.getSlotValue(handlerInput.requestEnvelope, 'nudgeNumber') || ''
+          ).toLowerCase();
+
+          const category = requestedType || sessionAttributes.settingsCategory;
+          const number = {
+              one: '1',
+              two: '2',
+              1: '1',
+              2: '2'
+          }[requestedNumber];
+
+          if (category !== 'sound' && category !== 'voice') {
+              sessionAttributes.settingsCategory = null;
+              attributesManager.setSessionAttributes(sessionAttributes);
+
+              const prompt =
+                  'Would you like a sound nudge or a voice nudge?';
+
+              return handlerInput.responseBuilder
+                  .speak(prompt)
+                  .reprompt(prompt)
+                  .getResponse();
+          }
+
+          if (!number) {
+              sessionAttributes.settingsCategory = category;
+              attributesManager.setSessionAttributes(sessionAttributes);
+
+              const prompt =
+                  `Would you like ${category} one or ${category} two?`;
+
+              return handlerInput.responseBuilder
+                  .speak(prompt)
+                  .reprompt(prompt)
+                  .getResponse();
+          }
+
+          const selectedNudge = `${category}${number}`;
+
+          const persistentAttributes =
+              await attributesManager.getPersistentAttributes() || {};
+
+          attributesManager.setPersistentAttributes(
+            Object.assign({}, persistentAttributes, { nudge: selectedNudge })
+            );
+
+
+          await attributesManager.savePersistentAttributes();
+
+          delete sessionAttributes.settingsCategory;
+          attributesManager.setSessionAttributes(sessionAttributes);
+
+          const spokenNumber = number === '1' ? 'one' : 'two';
+
+          return handlerInput.responseBuilder
+              .speak(
+                  `Your default nudge is now ${category} ${spokenNumber}. `
+                  + QUESTION_PROMPT
+              )
+              .reprompt(QUESTION_PROMPT)
+              .getResponse();
+      }
+  };
+
 const AskQuestionIntentHandler = {
     canHandle(handlerInput) {
         if (Alexa.getRequestType(handlerInput.requestEnvelope) !== 'IntentRequest') {
             return false;
         }
+
         const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
         return intentName === 'AskQuestionIntent' || Boolean(QUESTION_PREFIXES[intentName]);
     },
     handle: buildQuestionResponse
 };
 
-//triggered with utterance "help" once skill is already opened
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -120,7 +310,6 @@ const HelpIntentHandler = {
     }
 };
 
-//triggered with utterance "end query"
 const EndQuestionSessionIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -211,16 +400,19 @@ const ErrorHandler = {
     }
 };
 
-//translates skill into standard AWS lambda handler signature 
-exports.handler = Alexa.SkillBuilders.custom()
-    .addRequestHandlers(
-        LaunchRequestHandler,
-        AskQuestionIntentHandler,
-        HelpIntentHandler,
-        EndQuestionSessionIntentHandler,
-        FallbackIntentHandler,
-        SessionEndedRequestHandler,
-        IntentReflectorHandler)
-    .addErrorHandlers(ErrorHandler)
-    .withCustomUserAgent('audio-nudge-prototype/v1.0')
-    .lambda();
+//translate skill into standard AWS lambda handler signature 
+  exports.handler = Alexa.SkillBuilders.custom()
+      .addRequestHandlers(
+          LaunchRequestHandler,
+          SettingsIntentHandler,
+          AskQuestionIntentHandler,
+          HelpIntentHandler,
+          EndQuestionSessionIntentHandler,
+          FallbackIntentHandler,
+          SessionEndedRequestHandler,
+          IntentReflectorHandler)
+      .addErrorHandlers(ErrorHandler)
+      .withApiClient(new Alexa.DefaultApiClient())
+      .withPersistenceAdapter(persistenceAdapter)
+      .withCustomUserAgent('audio-nudge-prototype/v1.0')
+      .lambda();

@@ -1,126 +1,177 @@
 {
-    "interactionModel": {
-        "languageModel": {
-            "invocationName": "query nudge",
-            "intents": [
-                {
-                    "name": "AskQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "explain {question}",
-                        "find information about {question}",
-                        "tell me about {question}",
-                        "search for {question}",
-                        "query nudge {question}",
-                        "ask query nudge {question}"
-                    ]
-                },
-                {
-                    "name": "WhatQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "what {question}"
-                    ]
-                },
-                {
-                    "name": "WhoQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "who {question}"
-                    ]
-                },
-                {
-                    "name": "WhyQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "why {question}"
-                    ]
-                },
-                {
-                    "name": "WhereQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "where {question}"
-                    ]
-                },
-                {
-                    "name": "HowQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "how {question}"
-                    ]
-                },
-                {
-                    "name": "CanQuestionIntent",
-                    "slots": [
-                        {
-                            "name": "question",
-                            "type": "AMAZON.SearchQuery"
-                        }
-                    ],
-                    "samples": [
-                        "can {question}"
-                    ]
-                },
-                {
-                    "name": "EndQuestionSessionIntent",
-                    "slots": [],
-                    "samples": [
-                        "end query"
-                    ]
-                },
-                {
-                    "name": "AMAZON.CancelIntent",
-                    "samples": []
-                },
-                {
-                    "name": "AMAZON.HelpIntent",
-                    "samples": []
-                },
-                {
-                    "name": "AMAZON.StopIntent",
-                    "samples": []
-                },
-                {
-                    "name": "AMAZON.NavigateHomeIntent",
-                    "samples": []
-                },
-                {
-                    "name": "AMAZON.FallbackIntent",
-                    "samples": []
-                }
-            ],
-            "types": []
+  "interactionModel": {
+    "languageModel": {
+      "intents": [
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "AskQuestionIntent",
+          "samples": [
+            "explain {question}",
+            "find information about {question}",
+            "tell me about {question}",
+            "search for {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "WhatQuestionIntent",
+          "samples": [
+            "what {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "WhoQuestionIntent",
+          "samples": [
+            "who {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "WhyQuestionIntent",
+          "samples": [
+            "why {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "WhereQuestionIntent",
+          "samples": [
+            "where {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "HowQuestionIntent",
+          "samples": [
+            "how {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "CanQuestionIntent",
+          "samples": [
+            "can {question}"
+          ]
+        },
+        {
+          "slots": [],
+          "name": "EndQuestionSessionIntent",
+          "samples": [
+            "end query"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "nudgeType",
+              "type": "NUDGE_TYPE"
+            },
+            {
+              "name": "nudgeNumber",
+              "type": "NUDGE_NUMBER"
+            }
+          ],
+          "name": "SettingsIntent",
+          "samples": [
+            "settings",
+            "{nudgeType}",
+            "{nudgeNumber}",
+            "{nudgeType} {nudgeNumber}",
+            "select {nudgeType}",
+            "select {nudgeType} {nudgeNumber}",
+            "set nudge to {nudgeType} {nudgeNumber}"
+          ]
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
         }
+      ],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "value": "sound"
+              }
+            },
+            {
+              "name": {
+                "value": "voice"
+              }
+            }
+          ],
+          "name": "NUDGE_TYPE"
+        },
+        {
+          "values": [
+            {
+              "name": {
+                "value": "one"
+              }
+            },
+            {
+              "name": {
+                "value": "two"
+              }
+            }
+          ],
+          "name": "NUDGE_NUMBER"
+        }
+      ],
+      "invocationName": "query nudge"
     }
+  }
 }
