@@ -46,13 +46,13 @@
         "en-US": {
           "description": "Sample Full Description",
           "examplePhrases": [
-            "Alexa, open test me",
-            "hello",
+            "Alexa, ask query nudge {question}",
+            "Alexa, open query nudege",
             "help"
           ],
           "keywords": [],
           "name": "audio nudge prototype",
-          "summary": "Sample Short Description"
+          "summary": "An amazon alexa skill that searches the web using SerpApi, and plays an audio nudge after the answer to reduce information uncertainty"
         }
       },
       "testingInstructions": "{\"ask_dist_username\":\"\",\"ask_dist_password\":\"\",\"ask_dist_testing_instructions\":\"Sample Testing Instructions.\"}"

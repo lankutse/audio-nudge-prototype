@@ -137,6 +137,30 @@
         {
           "name": "AMAZON.FallbackIntent",
           "samples": []
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "ShouldQuestionIntent",
+          "samples": [
+            "should {question}"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "WhenQuestionIntent",
+          "samples": [
+            "when {question}"
+          ]
         }
       ],
       "types": [

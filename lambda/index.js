@@ -19,9 +19,8 @@ const persistenceAdapter = new ddbAdapter.DynamoDbPersistenceAdapter({
 
 //if desired, specify search sources below.
 const sources = [
-  'wikipedia.org',
-  'reddit.com'
 ];
+
 const sourceFilter = sources
   .map(domain => `site:${domain}`)
   .join(' OR ');
@@ -32,7 +31,9 @@ const QUESTION_PREFIXES = {
   WhyQuestionIntent: 'why',
   WhereQuestionIntent: 'where',
   HowQuestionIntent: 'how',
-  CanQuestionIntent: 'can'
+  CanQuestionIntent: 'can',
+  ShouldQuestionIntent: 'should',
+  WhenQuestionIntent: 'when'
 };
 
 //change audio nudge options below
@@ -60,7 +61,9 @@ const CONTINUE_PROMPT = 'What else would you like to ask? You can say end query 
 
 //uses serpAPI to search web, builds question response
 const search = question => new Promise((resolve, reject) => {
-  const searchQuery = `${question} (${sourceFilter})`;
+ const searchQuery = sourceFilter
+    ? `${question} (${sourceFilter})`
+    : question;
   https.get(`https://serpapi.com/search.json?engine=google&api_key=${process.env.SERPAPI_API_KEY}&q=${encodeURIComponent(searchQuery)}&hl=en`,response => {
       let body = '';
       response.on('data', chunk => body += chunk);
@@ -99,6 +102,16 @@ const search = question => new Promise((resolve, reject) => {
 
 const escapeSsml = text => text.replace(/[&<>]/g, character =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[character]);
+  
+//helper function for the settings mode; makes nudges preview before the user selects them
+const buildNudgePreview = nudge => {
+      if (nudge.type === 'audio') {
+          const url = util.getS3PreSignedUrl(nudge.value);
+          return `<audio src="${escapeSsml(url)}"/>`;
+      }
+
+      return escapeSsml(nudge.value);
+  };
 
 //answers question and plays audio or voice nudge
 const buildQuestionResponse = async (handlerInput) => {
@@ -142,7 +155,7 @@ const buildQuestionResponse = async (handlerInput) => {
 
     const speech =
         `${answerSpeech} `
-        + `<break time="1s"/> `
+        + `<break time="2s"/> `
         + `${escapeSsml(selectedNudge.value)} `
         + `<break time="3s"/> `
         + CONTINUE_PROMPT;
@@ -208,18 +221,23 @@ const SettingsIntentHandler = {
                 .getResponse();
         }
 
-        if (!number) {
-            sessionAttributes.settingsCategory = category;
-            attributesManager.setSessionAttributes(sessionAttributes);
+         if (!number) {
+      sessionAttributes.settingsCategory = category;
+      attributesManager.setSessionAttributes(sessionAttributes);
 
-            const prompt =
-                `Would you like ${category} one or ${category} two?`;
+      const nudgeOne = buildNudgePreview(NUDGES[`${category}1`]);
+      const nudgeTwo = buildNudgePreview(NUDGES[`${category}2`]);
 
-            return handlerInput.responseBuilder
-                .speak(prompt)
-                .reprompt(prompt)
-                .getResponse();
-        }
+      const prompt =
+          `Here is ${category} one. ${nudgeOne} `
+          + `Here is ${category} two. ${nudgeTwo} `
+          + `Would you like ${category} one or ${category} two?`;
+
+      return handlerInput.responseBuilder
+          .speak(prompt)
+          .reprompt(prompt)
+          .getResponse();
+  }
 
         const selectedNudge = `${category}${number}`;
 
