@@ -50,13 +50,36 @@ SERPAPI_API_KEY="<yourkeyhere>"
     ```text
     ffmpeg -i <example_nudge>.mp3 -codec:a libmp3lame -b:a 48k -ar 24000 -ac 1 <example_nudge_edited>.mp3
     ```
-3. Upload the sound to your S3 storage (shown in step 7 of configuring the dev console above) 
-4. Change the code shown below to have your new audio nudge play. Be sure to save and deploy before testing.
+2. Upload the sound to your S3 storage (shown in step 7 of configuring the dev console above) 
+3. Change the code shown below to have your new audio nudge play. Be sure to save and deploy before testing.
+<p align="center">
 <img width="671" height="43" alt="image" src="https://github.com/user-attachments/assets/8733bb9c-0377-45d0-81c5-effd0a99e379" />
+</p>
+
+## Add a New Type of Question Format
+1. Update the QUESTION_PREFIXES object at the top of index.js
+<p align="center">
+<img width="345" height="143" alt="image" src="https://github.com/user-attachments/assets/97045bbc-f46f-4603-a6be-90e8e4fdb747" />
+</p>
+
+2. In Build mode, open the "Intents" dropdown and select "+Add Intent"
+<p align="center">
+<img width="551" height="240" alt="image" src="https://github.com/user-attachments/assets/d36e0aab-7ebf-412b-b572-7305165ffd9f" />
+</p>
+
+3. Name the intent (and select "Create custom intent"), and in sample utterances add the keyword for your new question format followed by {question}. Select the "+", DO NOT create a new slot type.
+<p align="center">
+<img width="403" height="301" alt="image" src="https://github.com/user-attachments/assets/bc082535-32a8-4c7b-b55d-0297980beb3a" />
+</p>
+
+4. In the intent slots, select AMAZON.SearchQuery for the slot type.
+<p align="center">
+<img width="469" height="205" alt="image" src="https://github.com/user-attachments/assets/5a31e7a8-b26c-4c19-8041-d20b7e6444f6" />
+</p>
+
+5. Save, then Build the skill. Your .json file will be automatically updated with the new intent when you build the skill. Deploy before testing in the console. 
 
 
-
-      
 
 
 ## Using The Skill: 
@@ -78,14 +101,16 @@ The question must be well formed without the prefix "Alexa, ask query nudge" to 
 "Alexa, ask query nudge who the first president was" -> "who the first president was" is searched
 ```
 
-Questions can begin with `what`, `who`, `why`, `where`, `how`, or `can`: 
+Questions can begin with `what`, `who`, `when`, `why`, `where`, `how`, `can`, or `should`: 
 ```text
 what causes an eclipse
 who was Marie Curie
+when was MySpace created
 why is the sky blue
 where is the Eiffel Tower
 how does photosynthesis work
 can I freeze milk
+should I boil pasta for 20 minutes
 ```
 
 The following 4 command-style utterances are also supported:
@@ -97,6 +122,22 @@ The following 4 command-style utterances are also supported:
 ```
 Say `end query`, `stop`, or `cancel` to end the session. Say `help` for usage
 guidance.
+
+
+## Settings Mode: 
+Currently, the skill has 4 audio nudge options available (two audio nudges, and two spoken nudges): 
++ Valley shaped sinewave 
++ Descending sinewave 
++ Spoken phrase "What do you think about that?" 
++ Spoken phrase "The information I looked up online relates to a health topic" 
+
+(Sourced from the paper ["Designing Accessible Audio Nudges for Voice Interfaces"](https://dl.acm.org/doi/10.1145/3706598.3713563) )
+
+To switch the nudge that plays, the user can say "settings" once the skill is active. They will then be asked if they would like a sound nudge or a voice nudge. Once they select voice or sound, they can select either sound or voice nudge one/two (see example below)
+
+<p align="center">
+<img width="260" height="436" alt="image" src="https://github.com/user-attachments/assets/3e91d687-985c-47e9-8a7c-6eb599e2c776" />
+</p>
 
 
 ## Notes: 
